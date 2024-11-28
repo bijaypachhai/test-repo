@@ -9,7 +9,6 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  INITAL_VERSION: 10002
 
 # There is a single job in this workflow. It's configured to run on the latest available version of Ubuntu.
 jobs:
@@ -28,18 +27,21 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GH_TOKEN }}
 
-      # Check if current tag is number or not
-      # if current tag is not number, use INITIAL_VERSION as tag and increase it in subsequent runs
-      - name: Check current image version and set new built image version
+      # Get current latest tag of image using github API
+      # Increase the version number by 1
+      - name: Get current image version and increase by 1
         run: |
-          current_tag=$(curl -s \
+          CURRENT_TAG=$(curl -s \
               -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
               -H "Accept: application/vnd.github+json" \
               -H "X-GitHub-Api-Version: 2022-11-28" \
-              "https://api.github.com/user/packages/container/test-repo/versions" | \
-              jq '.[] | {id,metadata}' || echo "10003"
-          echo "This is list of metadata: $current_tag")
-          echo "JQ version: $(jq --version)"
+              "https://api.github.com/user/packages/container/test-repo/versions" \
+              | jq '.[].metadata.container.tags[]' | sort -r | head -n 1 || echo "100"
+          
+          CURRENT_TAG_WITHOUT_QUOTES="${CURRENT_TAG//\"/}"
+          
+          NEWTAG=$((CURRENT_TAG_WITHOUT_QUOTES + 1))
+          echo "NEWTAG=$NEWTAG" >> $GITHUB_ENV
 
       # This step uses the `docker/build-push-action` action to build the image, based on your repository's `Dockerfile`. If the build succeeds, it pushes the image to GitHub Packages.
       # It uses the `context` parameter to define the build's context as the set of files located in the specified path. For more information, see "[Usage](https://github.com/docker/build-push-action#usage)" in the README of the `docker/build-push-action` repository.
@@ -50,5 +52,5 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/bijaypachhai/test-repo:${{ env.INITAL_VERSION }}
+          tags: ghcr.io/bijaypachhai/test-repo:$NEWTAG
       
