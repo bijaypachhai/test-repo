@@ -52,5 +52,5 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/bijaypachhai/test-repo:"$NEWTAG"
+          tags: ghcr.io/bijaypachhai/test-repo:${{ env.NEWTAG }}
       
