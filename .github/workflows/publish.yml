@@ -16,6 +16,7 @@ env:
 jobs:
   build-and-push-image:
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' }} 
        
     steps:
       - name: Checkout repository
