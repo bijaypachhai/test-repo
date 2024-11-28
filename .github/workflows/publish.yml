@@ -4,6 +4,8 @@ name: Create and publish a Docker image
 on:
   push:
     branches: ['main']
+  registry_package:
+    types: [published]
 
 # Defines two custom environment variables for the workflow. These are used for the Container registry domain, and a name for the Docker image that this workflow builds.
 env:
@@ -53,4 +55,18 @@ jobs:
           context: .
           push: true
           tags: ghcr.io/bijaypachhai/test-repo:${{ env.NEWTAG }}
-      
+  
+  check-new-package:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'registry_package' }}  
+    
+    steps:
+      - name: Get newly published image tag
+        run: |
+          CURRENT_TAG=$(curl -s \
+              -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
+              -H "Accept: application/vnd.github+json" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              "https://api.github.com/user/packages/container/test-repo/versions" \
+              | jq '.[].metadata.container.tags[]' | sort -r | head -n 1 || echo "100")
+          echo "This is the latest version: $CURRENT_TAG"
