@@ -39,7 +39,10 @@ jobs:
       # if current tag is not number, use INITIAL_VERSION as tag and increase it in subsequent runs
       - name: Check current image version and set new built image version
         run: |
-          current_tag=$(curl -s "https://api.github.com/repos/test-repo/packages/container/test-repo/versions")
+          current_tag=$(curl -s \
+              -H "Authorization: Bearer ${{ github.token }}" \
+              -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/test-repo/packages/container/test-repo/versions")
           echo "This is current tag: $current_tag"
 
       # This step uses the `docker/build-push-action` action to build the image, based on your repository's `Dockerfile`. If the build succeeds, it pushes the image to GitHub Packages.
@@ -47,7 +50,7 @@ jobs:
       # It uses the `tags` and `labels` parameters to tag and label the image with the output from the "meta" step.
       - name: Build and push Docker image
         id: push
-        uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: true
