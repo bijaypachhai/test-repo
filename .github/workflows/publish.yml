@@ -9,18 +9,12 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  INITAL_VERSION: 10001
+  INITAL_VERSION: 10002
 
 # There is a single job in this workflow. It's configured to run on the latest available version of Ubuntu.
 jobs:
   build-and-push-image:
     runs-on: ubuntu-latest
-    # Sets the permissions granted to the `GITHUB_TOKEN` for the actions in this job.
-    #permissions:
-      #contents: read
-      #packages: write
-      #attestations: write
-      #id-token: write
        
     steps:
       - name: Checkout repository
@@ -42,7 +36,7 @@ jobs:
               -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
               -H "Accept: application/vnd.github+json" \
               -H "X-GitHub-Api-Version: 2022-11-28" \
-              "https://api.github.com/user/packages?package_type=container")
+              "https://api.github.com/user/packages/container/test-repo/versions")
           echo "This is current tag: $current_tag"
 
       # This step uses the `docker/build-push-action` action to build the image, based on your repository's `Dockerfile`. If the build succeeds, it pushes the image to GitHub Packages.
@@ -55,5 +49,4 @@ jobs:
           context: .
           push: true
           tags: ghcr.io/bijaypachhai/test-repo:${{ env.INITAL_VERSION }}
-          #token: ${{ secrets.GITHUB_TOKEN }}
       
