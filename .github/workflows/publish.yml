@@ -42,7 +42,7 @@ jobs:
           current_tag=$(curl -s \
               -H "Authorization: Bearer ${{ github.token }}" \
               -H "Accept: application/vnd.github.v3+json" \
-              "https://api.github.com/repos/test-repo/packages/container/test-repo/versions")
+              "https://api.github.com/orgs/bijaypachhai/packages?package_type=container")
           echo "This is current tag: $current_tag"
 
       # This step uses the `docker/build-push-action` action to build the image, based on your repository's `Dockerfile`. If the build succeeds, it pushes the image to GitHub Packages.
@@ -54,5 +54,5 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ env.INITAL_VERSION }}
+          tags: ghcr.io/bijaypachhai/test-repo:${{ env.INITAL_VERSION }}
       
